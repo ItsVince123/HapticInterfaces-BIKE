@@ -74,7 +74,7 @@ The prototype effectively translates spatial, kinetic, and telemetry data into t
 Bench testing confirms that both the sensing matrix and the safety lighting perform exceptionally well. The IMU-driven brake and crash detection algorithms operate reliably, proving that the adaptive low-pass filter with a quiet-band lockout can produce a highly accurate, auto-calibrating brake light without requiring complex trigonometry. 
 
 The decision to separate the processing load across two microcontrollers (the Uno and the Micro) was dictated by two primary constraints encountered during development:
-1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated PCB layout. 
+1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout. 
 2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ---
