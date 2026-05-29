@@ -6,7 +6,7 @@ Cycling provides measurable cognitive and physical benefits for older adults [3]
 
 Current commercial safety solutions have notable gaps. Traditional bike radars provide a binary "behind-you" warning without conveying specific left/right spatial information. More importantly, attempting to solve this by adding another screen to the handlebars introduces a dangerous visual distraction, increasing driver perception-brake times [8], [9]. Mirror glances cost valuable forward attention, and auditory beeps are easily lost in loud city traffic.
 
-Our project addresses these limitations by utilizing haptic technology [5], [10]. A short vibration on the left or right handlebar grip utilizes the tactile channel—which is almost always free while cycling—to naturally convey threat direction without visual or auditory load [6], [7]. To complement the rider's spatial awareness, the system also incorporates an inertial measurement unit (IMU) that provides automated brake and crash detection, engaging a rear LED to proactively alert trailing traffic. This prototype acts as a comprehensive, screen-free hardware solution that restores spatial awareness and communicates intent, keeping the rider's eyes firmly on the road forward.
+Our project addresses these limitations by utilizing haptic technology [5], [10]. A short vibration on the left or right handlebar grip utilizes the tactile channel—which is almost always free while cycling—to naturally convey threat direction without visual or auditory load [6], [7]. To complement the rider's spatial awareness, the system also incorporates an inertial measurement unit (IMU) that provides automated brake and crash detection, engaging a rear LED to proactively alert trailing traffic. Furthermore, the system leverages a Hall effect sensor for real-time distance and speed tracking. Instead of relying on a visual speedometer, the haptics deliver pace reminders, overspeed warnings, and distance milestones directly to the rider's hands. This prototype acts as a comprehensive, screen-free hardware solution that restores spatial awareness and communicates intent, keeping the rider's eyes firmly on the road forward.
 
 ---
 
@@ -26,7 +26,7 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | **Hall sensor (KY-003) + magnet** | Wheel-magnet speed and distance tracking. | 1 | €5 |
 | **9V battery connector** | Portable supply for ~8 hours of continuous operation. | 1 | €3 |
 | **Jumper Cables (F-to-F)** | Mechanical integration on handlebar stem and seat post. | 40 | €5 |
-| **3D Printed bike** | Custom bike to secure electronics to the bike chassis. | 1 | €0 (Custom) |
+| **3D Printed bike mounts** | Custom mounts to secure electronics to the bike chassis. | 1 | €0 (Custom) |
 
 *Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
 
@@ -37,12 +37,12 @@ The total estimated cost for this prototype is approximately €160. To replicat
 ### Step 1: Conceptual Framework and Component Rationale
 The architectural design of this system is fundamentally structured around multimodal sensory integration, prioritizing real-time environmental monitoring without imposing cognitive load on the user. The components were selected based on the following rationales:
 * **Ultrasonic Sensors (HC-SR04):** Chosen for cost-effective, time-of-flight acoustic proximity detection. By emitting high-frequency sound waves and measuring the echo return time, these sensors accurately determine the distance of lateral hazards (like overtaking vehicles) in the rider's blind spots.
-* **Hall Effect Sensor (KY-003):** Selected for robust, non-contact rotational telemetry. A permanent magnet is affixed to the wheel spokes; as the wheel rotates, the magnet passes the sensor, inducing a measurable fluctuation in the magnetic field. This allows the system to calculate precise speed and distance metrics independent of GPS signals.
+* **Hall Effect Sensor (KY-003):** Selected for robust, non-contact rotational telemetry. A permanent magnet is affixed to the wheel spokes; as the wheel rotates, the magnet passes the sensor, inducing a measurable fluctuation in the magnetic field. This allows the system to calculate precise speed and distance metrics independent of GPS signals, enabling the haptic actuators to deliver pace reminders, distance milestones, and safety warnings for overspeeding.
 * **Inertial Measurement Unit (MPU-6050):** A 6-axis MEMS (Micro-Electromechanical Systems) sensor utilized to capture the kinetic state of the bicycle. It provides high-resolution acceleration and angular velocity data, enabling the system to deduce intentional deceleration (braking) and uncontrolled kinetic events (crashes).
 * **TacHammer Actuators:** Deployed on the steering wheel to leverage the tactile communication channel. These specific voice-coil actuators provide distinct, high-fidelity haptic patterns that are easily distinguishable from standard road vibration.
 * The decision to separate the processing load across two microcontrollers (the Uno and the Micro) was dictated by two primary constraints encountered during development:
-1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout. 
-2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
+  1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout. 
+  2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ### Step 2: Physical Construction, Power, and Integration
 The mechanical assembly required strategic distribution of components across the bicycle frame. 
@@ -72,34 +72,23 @@ Detecting a braking bicycle is notoriously complex because a static deceleration
 
 ## Discussion
 
-The prototype effectively translates spatial, kinetic, and telemetry data into tactile and visual feedback, directly addressing the sensory deficits common in older cyclists. By utilizing independent left/right haptic channels, the system successfully eliminates the need for visual dashboard checks, mitigating the cognitive load associated with mirror checking. 
+The prototype effectively translates spatial, kinetic, and telemetry data into tactile and visual feedback, directly addressing the sensory deficits common in older cyclists. By utilizing independent left/right haptic channels, the system successfully eliminates the need for visual dashboard checks, entirely mitigating the cognitive load associated with mirror checking and screen reading.
 
-Bench testing confirms that both the sensing matrix and the safety lighting perform exceptionally well. The IMU-driven brake and crash detection algorithms operate reliably, proving that the adaptive low-pass filter with a quiet-band lockout can produce a highly accurate, auto-calibrating brake light without requiring complex trigonometry. 
+During rigorous testing, both the IMU brake/crash algorithms and the haptic feedback systems proved to be exceptionally reliable. The haptics deliver an immediate, intuitive response, allowing the rider to easily discern between a left-side hazard, an overspeed warning, or a distance milestone. Furthermore, the IMU's adaptive low-pass filter with the quiet-band lockout worked remarkably well; it dynamically auto-calibrated to the road's incline, consistently triggering the brake light without false positives, all without requiring complex trigonometry.
+
+However, as this is a functional prototype built onto a real bicycle, there are notable limitations and constraints to address before mass deployment:
+1. **Environmental Vulnerability:** The exposed HC-SR04 ultrasonic sensors are susceptible to acoustic interference from heavy rain or high wind speeds, and mud accumulation can blind the transceivers. 
+2. **Wiring Fragility:** Relying on standard jumper cables and breadboard configurations introduces points of failure under the continuous mechanical vibration of road cycling.
+3. **Fixed Calibration Constraints:** The current Hall effect logic calculates speed based on a hardcoded wheel circumference. Moving the system to a different bicycle requires manual code adjustments rather than a seamless user-calibrated setup.
 
 ---
 
 ## Conclusion and Future Work
 
-This project demonstrates a highly viable proof-of-concept: haptic feedback can seamlessly replace visual and auditory dashboards to restore spatial awareness for elderly and vulnerable cyclists. The prototype successfully integrates blind-spot monitoring, speed pacing, and automated safety lighting into a comprehensive interface.
+This project demonstrates a highly successful proof-of-concept: haptic feedback can seamlessly replace visual and auditory dashboards to restore spatial awareness for elderly and vulnerable cyclists. The main findings highlight that combining non-blocking ultrasonic monitoring with an adaptive IMU algorithm creates a holistic, screen-free safety net. The prototype securely integrates blind-spot monitoring, intuitive pace/speed pacing via the Hall effect sensor, and automated safety lighting into a comprehensive interface.
 
-Future development should focus on several key areas:
-1. **Hardware Consolidation:** Migrating the codebase to a single, more powerful 32-bit microcontroller with RTOS (Real-Time Operating System) capabilities, housed in a professionally manufactured weatherproof enclosure.
-2. **Sensor Upgrades:** Swapping the HC-SR04 ultrasonic sensors for short-range millimeter-wave radar to improve reliability in dense traffic, heavy rain, and varied lighting conditions.
-3. **App Integration & Emergency Response:** Utilizing Bluetooth to sync ride telemetry to a companion app. This would allow clinicians to prescribe structured cycling rehabilitation plans, and enable the IMU's crash-latch state to automatically trigger an SMS alert to emergency contacts or an ambulance.
-4. **Clinical Validation:** Conducting structured on-road user studies with elderly, glaucoma, and hearing-impaired demographics to fine-tune the haptic intensity and detection thresholds.
+**Lessons Learned:**
+For others building upon this work, a major lesson learned is the critical importance of non-blocking code (state machines and hardware interrupts) when managing real-time safety haptics. Any blocking code immediately degrades the quality and timing of tactile alerts. Additionally, when using I2C multiplexers like the TCA9548A for haptic drivers, developers must remember that multiplexers do not isolate the continuous PWM drive signals—timer allocation and electrical isolation must be planned at the hardware level.
 
----
-
-## References
-
-[1] S. W. van Landingham et al., “Driving patterns in older adults with glaucoma,” BMC Ophthalmol., vol. 13, no. 4, 2013.  
-[2] J. M. Wood, A. A. Black, K. Mallon, R. Thomas and C. Owsley, “Glaucoma and driving: on-road driving characteristics,” PLoS ONE, vol. 11, no. 7, e0158318, 2016.  
-[3] L.-A. Leyland et al., “The effect of cycling on cognitive function and well-being in older adults,” PLoS ONE, vol. 14, no. 2, e0211779, 2019.  
-[4] M. Kardan et al., “Cycling in older adults: a scoping review,” Front. Sports Act. Living, vol. 5, art. 1157503, 2023.  
-[5] D. S. Alles, “Information transmission by phantom sensations,” IEEE Trans. Man-Machine Syst., vol. 11, no. 1, pp. 85–91, 1970.  
-[6] J. Seiler et al., “Wearable vibrotactile interface using phantom tactile sensation for human–robot interaction,” in Proc. EuroHaptics, Springer LNCS 12272, 2020, pp. 380–388.  
-[7] A. Matviienko et al., “Augmenting bicycles and helmets with multimodal warnings for children,” in Proc. MobileHCI ’18, Barcelona, Spain, 2018, art. 15, pp. 1–13.  
-[8] M. Green, “‘How long does it take to stop?’ Methodological analysis of driver perception–brake times,” Transp. Hum. Factors, vol. 2, no. 3, pp. 195–216, 2000.  
-[9] J. R. Treat et al., “Tri-level study of the causes of traffic accidents,” NHTSA Report DOT-HS-805-099, 1979.  
-[10] Y. Gaffary and A. Lécuyer, “The use of haptic and tactile information in the car to improve driving safety: a review of current technologies,” Front. ICT, vol. 5, art. 5, 2018.  
-[11] World Health Organization, “Global status report on road safety,” Geneva: WHO, 2023.
+**Future Development Directions:**
+1. **App Integration & Workout Tracking:** Utilizing a Bluetooth module to sync the ride telemetry (from the Hall effect sensor) to a companion smartphone app. Clinicians or users could set
