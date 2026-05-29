@@ -32,6 +32,7 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | **Small 3D Printed bike** | Custom scale model bike to house and secure the electronics. | 1 | €0 (Custom) |
 
 *Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
+
 ![Micro](SCHEMATIC_Micro.png)
 ![Uno](SCHEMATIC_Uno.png)
 ---
@@ -54,7 +55,7 @@ The mechanical assembly required strategic distribution of components across the
 * **Haptic Placement:** The two TacHammer actuators are mounted directly onto the left and right grips of the steering wheel (handlebars).
 * **Power and Testing Configuration:** To manage power constraints and facilitate debugging, the system employs a dual-power strategy. The onboard Arduino Micro is powered independently by a 9V battery. Conversely, the Arduino Uno is maintained separately on a testing breadboard and is powered directly via a PC USB connection. During testing and calibration phases, the ultrasonic sensors, the Hall effect sensor, and the haptic actuators can be quickly routed to the breadboard/Uno for live serial monitoring and algorithm refinement.
 
-### Step 3: The Concurrency Engine (Arduino Uno)
+### Step 3: The Concurrency Engine (Arduino Uno) [CODE_Blindspot_Tracking.ino]
 The primary software challenge was the simultaneous execution of distance sensing and high-speed wheel tracking on the Arduino Uno. Standard methodologies for ultrasonic sensors (e.g., the `pulseIn()` function) block the processor while waiting for an acoustic echo, which would destroy the precise timing required for I2C haptic patterns and cause the system to miss wheel rotations.
 
 To achieve microsecond-level concurrency, we engineered a non-blocking architecture:
@@ -66,7 +67,7 @@ During integration, a hardware conflict arose: both left and right TacHammer mot
 * **The PWM Split:** We resolved this by electrically isolating the PWM lines. Using the ATmega328P's internal Timer2, we configured two independent PWM outputs: Pin 11 (`OC2A`) for the left motor and Pin 3 (`OC2B`) for the right motor.
 * **Signed PWM Scheme:** The haptic library operates on a signed PWM scheme where a ~50% duty cycle (`PWM_NEUTRAL = 127`) equates to zero mechanical drive. When a left-side threat is detected, the right motor's PWM is parked exactly at neutral, ensuring complete mechanical isolation between the left and right tactile alerts.
 
-### Step 5: Adaptive IMU Algorithm (Arduino Micro)
+### Step 5: Adaptive IMU Algorithm (Arduino Micro) [CODE_Brake_Fall.ino]
 Detecting a braking bicycle is notoriously complex because a static deceleration threshold will trigger false positives when riding uphill and fail to trigger when riding downhill. The Arduino Micro runs a sophisticated, self-correcting adaptive algorithm on the MPU-6050 data at 50 Hz to solve this:
 * **The Dynamic Baseline:** The code applies a slow low-pass filter (`forwardBaseline += 0.01 * (forward - forwardBaseline)`) to the forward acceleration axis. This creates a floating baseline that constantly adjusts to gravity (hill inclines) and average cruising speed, acting as a ~2-second time constant.
 * **The "Quiet Band" Lockout:** To prevent the baseline from absorbing sudden stops, the algorithm implements a `BASELINE_QUIET_BAND`. The baseline is only permitted to update when the acceleration signal is exceptionally quiet. When the rider brakes hard, the baseline mathematically locks into place, providing a rock-solid reference point for the duration of the stop. If the acceleration drops below this locked baseline by `0.6 m/s²` for three consecutive samples, the LED jumps to full brightness.
