@@ -47,7 +47,7 @@ The architectural design of this system is fundamentally structured around multi
 * **TacHammer Actuators:** Deployed on the steering wheel to leverage the tactile communication channel. These specific voice-coil actuators provide distinct, high-fidelity haptic patterns that are easily distinguishable from standard road vibration.
 * The decision to separate the processing load across two microcontrollers—dedicating the **Arduino Uno** to the ultrasonic blind-spot monitoring and Hall effect speed tracking, while the **Arduino Micro** independently handles the IMU-driven brake and crash detection—was dictated by two primary constraints encountered during development:
   1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout on the scale model. 
-  2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-leve
+  2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ### Step 2: Physical Construction, Power, and Integration
 The mechanical assembly required strategic distribution of components across the bicycle frame. 
