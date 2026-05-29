@@ -32,7 +32,8 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | **Small 3D Printed bike** | Custom scale model bike to house and secure the electronics. | 1 | €0 (Custom) |
 
 *Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
-
+![Micro](SCHEMATIC_Micro.png)
+![Uno](SCHEMATIC_Uno.png)
 ---
 
 ## Methods
