@@ -76,10 +76,11 @@ The prototype effectively translates spatial, kinetic, and telemetry data into t
 
 During rigorous testing, both the IMU brake/crash algorithms and the haptic feedback systems proved to be exceptionally reliable. The haptics deliver an immediate, intuitive response, allowing the rider to easily discern between a left-side hazard, an overspeed warning, or a distance milestone. Furthermore, the IMU's adaptive low-pass filter with the quiet-band lockout worked remarkably well; it dynamically auto-calibrated to the road's incline, consistently triggering the brake light without false positives, all without requiring complex trigonometry.
 
-However, as this is a functional prototype built onto a real bicycle, there are notable limitations and constraints to address before mass deployment:
+However, as this is a functional prototype built onto a scaled bicycle, there are notable limitations and constraints to address before mass deployment:
 1. **Environmental Vulnerability:** The exposed HC-SR04 ultrasonic sensors are susceptible to acoustic interference from heavy rain or high wind speeds, and mud accumulation can blind the transceivers. 
 2. **Wiring Fragility:** Relying on standard jumper cables and breadboard configurations introduces points of failure under the continuous mechanical vibration of road cycling.
 3. **Fixed Calibration Constraints:** The current Hall effect logic calculates speed based on a hardcoded wheel circumference. Moving the system to a different bicycle requires manual code adjustments rather than a seamless user-calibrated setup.
+4. **Mounting:** All the hardware needs to have a proper place and needs to be securely mounted onto the bike.
 
 ---
 
