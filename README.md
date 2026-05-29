@@ -2,11 +2,11 @@
 
 ## Introduction
 
-Cycling provides measurable cognitive and physical benefits for older adults, yet it remains inherently dangerous in complex traffic environments. Many older cyclists gradually lose the two traffic senses they rely on most: peripheral vision (often resulting from glaucoma) and sound localization (due to age-related hearing loss). This sensory decline makes elderly cyclists incredibly vulnerable to unseen lateral hazards. Furthermore, driving and mobility studies demonstrate that around 1 in 4 people aged 60-80 with glaucoma stop driving, often disengaging from active transportation entirely. The recent surge in e-bike popularity compounds this issue; their heavier weight and faster speeds have led to a massive spike in severe crashes among older populations.
+Cycling provides measurable cognitive and physical benefits for older adults [3], [4], yet it remains inherently dangerous in complex traffic environments [11]. Many older cyclists gradually lose the two traffic senses they rely on most: peripheral vision (often resulting from glaucoma) and sound localization (due to age-related hearing loss). This sensory decline makes elderly cyclists incredibly vulnerable to unseen lateral hazards. Furthermore, driving and mobility studies demonstrate that around 1 in 4 people aged 60-80 with glaucoma stop driving [1], [2], often disengaging from active transportation entirely. The recent surge in e-bike popularity compounds this issue; their heavier weight and faster speeds have led to a massive spike in severe crashes among older populations.
 
-Current commercial safety solutions have notable gaps. Traditional bike radars provide a binary "behind-you" warning without conveying specific left/right spatial information. More importantly, attempting to solve this by adding another screen to the handlebars introduces a dangerous visual distraction, increasing driver perception-brake times. Mirror glances cost valuable forward attention, and auditory beeps are easily lost in loud city traffic.
+Current commercial safety solutions have notable gaps. Traditional bike radars provide a binary "behind-you" warning without conveying specific left/right spatial information. More importantly, attempting to solve this by adding another screen to the handlebars introduces a dangerous visual distraction, increasing driver perception-brake times [8], [9]. Mirror glances cost valuable forward attention, and auditory beeps are easily lost in loud city traffic.
 
-Our project addresses these limitations by utilizing haptic technology. A short vibration on the left or right handlebar grip utilizes the tactile channel—which is almost always free while cycling—to naturally convey threat direction without visual or auditory load. This prototype acts as a proactive hardware solution that restores spatial awareness instantly, keeping the rider's eyes firmly on the road forward.
+Our project addresses these limitations by utilizing haptic technology [5], [10]. A short vibration on the left or right handlebar grip utilizes the tactile channel—which is almost always free while cycling—to naturally convey threat direction without visual or auditory load [6], [7]. To complement the rider's spatial awareness, the system also incorporates an inertial measurement unit (IMU) that provides automated brake and crash detection, engaging a rear LED to proactively alert trailing traffic. This prototype acts as a comprehensive, screen-free hardware solution that restores spatial awareness and communicates intent, keeping the rider's eyes firmly on the road forward.
 
 ---
 
@@ -28,52 +28,66 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | **Jumper Cables (F-to-F)** | Mechanical integration on handlebar stem and seat post. | 40 | €5 |
 | **3D Printed Enclosures** | Custom frame mounts to secure electronics to the bike chassis. | 1 | €0 (Custom) |
 
+*Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
+
 ---
 
 ## Methods
 
-### Step 1: The Concurrency Engine (Arduino Uno)
-The crown jewel of the Arduino Uno's implementation is the seamless, concurrent execution of distance sensing and high-speed wheel tracking. Standard Arduino tutorials for ultrasonic sensors rely on the `pulseIn()` function, which halts the entire processor while waiting for an echo to return. If we used `pulseIn()`, the entire system would freeze for up to 18 milliseconds per ping, completely destroying the timing of the haptic feedback patterns and causing the system to miss wheel rotations.
+### Step 1: Conceptual Framework and Component Rationale
+The architectural design of this system is fundamentally structured around multimodal sensory integration, prioritizing real-time environmental monitoring without imposing cognitive load on the user. The components were selected based on the following rationales:
+* **Ultrasonic Sensors (HC-SR04):** Chosen for cost-effective, time-of-flight acoustic proximity detection. By emitting high-frequency sound waves and measuring the echo return time, these sensors accurately determine the distance of lateral hazards (like overtaking vehicles) in the rider's blind spots.
+* **Hall Effect Sensor (KY-003):** Selected for robust, non-contact rotational telemetry. A permanent magnet is affixed to the wheel spokes; as the wheel rotates, the magnet passes the sensor, inducing a measurable fluctuation in the magnetic field. This allows the system to calculate precise speed and distance metrics independent of GPS signals.
+* **Inertial Measurement Unit (MPU-6050):** A 6-axis MEMS (Micro-Electromechanical Systems) sensor utilized to capture the kinetic state of the bicycle. It provides high-resolution acceleration and angular velocity data, enabling the system to deduce intentional deceleration (braking) and uncontrolled kinetic events (crashes).
+* **TacHammer Actuators:** Deployed on the steering wheel to leverage the tactile communication channel. These specific voice-coil actuators provide distinct, high-fidelity haptic patterns that are easily distinguishable from standard road vibration.
 
-To solve this, we engineered a highly responsive, non-blocking architecture:
-* **Asynchronous State Machine:** The two HC-SR04 sensors are managed by a microsecond-level state machine (`US_IDLE`, `US_WAIT_RISE`, `US_WAIT_FALL`, `US_GAP`). The Uno rapidly checks pin states against `micros()` timestamps, advancing the state only when a hardware pin changes, leaving the main loop running at breakneck speed.
-* **Hardware Interrupts (Hall Effect):** While the state machine juggles the ultrasonic pings, the Hall effect speed sensor is wired directly to `D2 (INT0)`. This utilizes a dedicated hardware interrupt. Whenever the wheel magnet passes the sensor, the hardware physically interrupts the CPU, freezing the main loop for just a few clock cycles to increment the wheel tick counter in the background, and then instantly resumes the main loop. 
-* **The Result:** The Uno flawlessly manages an alternating 40 ms ping-pong between the two ultrasonic sensors, instantly catches a wheel spinning at 40+ km/h, and fires complex I2C haptic patterns to the handlebars—all simultaneously, without a single millisecond of blocking delay.
+### Step 2: Physical Construction, Power, and Integration
+The mechanical assembly required strategic distribution of components across the bicycle frame. 
+* **Frame Integration:** The Arduino Micro, the MPU-6050 IMU, both HC-SR04 ultrasonic sensors, the safety LED (with its 220-ohm resistor), the 9V battery, and the Hall effect sensor are physically secured and glued to the bicycle frame using custom 3D-printed mounts. Internal data and power pathways are established using standard female-to-female jumper cables.
+* **Haptic Placement:** The two TacHammer actuators (referred to internally as "drakes") are mounted directly onto the left and right grips of the steering wheel (handlebars).
+* **Power and Testing Configuration:** To manage power constraints and facilitate debugging, the system employs a dual-power strategy. The onboard Arduino Micro is powered independently by a 9V battery. Conversely, the Arduino Uno is maintained separately on a testing breadboard and is powered directly via a PC USB connection. During testing and calibration phases, the ultrasonic sensors, the Hall effect sensor, and the haptic actuators can be quickly routed to the breadboard/Uno for live serial monitoring and algorithm refinement.
 
-### Step 2: Resolving Haptic Hardware Constraints
-A significant hardware challenge emerged during integration: both left and right TacHammer motors would buzz simultaneously regardless of the threat's direction. The TCA9548A I2C multiplexer only switches the control registers of the DRV2605 drivers, not the actual PWM drive signal.
-* **The PWM Split:** We electrically separated the PWM lines. Using the ATmega328P's Timer2, we configured two independent PWM outputs: Pin 11 (`OC2A`) for the left motor and Pin 3 (`OC2B`) for the right motor.
-* **Signed PWM Scheme:** The haptic library is configured for a signed PWM scheme where a ~50% duty cycle (`PWM_NEUTRAL = 127`) equates to zero physical drive. When a left-side threat is detected, the right motor's PWM is parked exactly at neutral, ensuring complete mechanical isolation between the left and right alerts.
+### Step 3: The Concurrency Engine (Arduino Uno)
+The primary software challenge was the simultaneous execution of distance sensing and high-speed wheel tracking on the Arduino Uno. Standard methodologies for ultrasonic sensors (e.g., the `pulseIn()` function) block the processor while waiting for an acoustic echo, which would destroy the precise timing required for I2C haptic patterns and cause the system to miss wheel rotations.
 
-### Step 3: Adaptive IMU Algorithm (Arduino Micro)
-Detecting a braking bicycle is notoriously difficult because bicycles lean into turns and tilt up and down hills. A static deceleration threshold would constantly trigger false brake lights when riding uphill or fail to trigger when riding downhill. To solve this, the Arduino Micro runs a sophisticated, self-correcting adaptive algorithm on the MPU-6050 data:
+To achieve microsecond-level concurrency, we engineered a non-blocking architecture:
+* **Asynchronous State Machine:** The two HC-SR04 sensors are managed by a custom state machine (`US_IDLE`, `US_WAIT_RISE`, `US_WAIT_FALL`, `US_GAP`). The Uno rapidly compares pin states against `micros()` timestamps, advancing the state only upon hardware pin changes. This ping-pongs the sensors with a 40 ms settle gap to prevent acoustic cross-interference, leaving the main loop running unhindered.
+* **Hardware Interrupts:** Concurrently, the Hall effect sensor is wired to `D2 (INT0)`. Whenever the wheel magnet passes the sensor, a hardware interrupt is triggered. This physically interrupts the CPU for a fraction of a millisecond to increment the wheel tick counter in the background before instantly resuming the main loop. 
 
-* **The Dynamic Baseline:** Instead of assuming "0" is flat, the code uses a slow low-pass filter (`forwardBaseline += 0.01 * (forward - forwardBaseline)`) running at 50 Hz. This creates a floating baseline that represents the current combination of gravity (hill incline) and average cruising speed, acting as a ~2-second time constant.
-* **The "Quiet Band" Lockout:** The most clever part of this algorithm is the `BASELINE_QUIET_BAND`. If the rider brakes hard or accelerates quickly, updating the baseline would cause the algorithm to "absorb" the braking event and turn the light off prematurely. The algorithm only updates the baseline when the `brakeSignal` is exceptionally quiet (less than half the trigger threshold). When the rider actually brakes, the baseline locks into place, ensuring a rock-solid reference point for the duration of the stop.
-* **Debounced Trigger:** If the instantaneous forward acceleration drops below this locked baseline by `0.6 m/s²` for three consecutive samples, the LED jumps to full brightness.
-* **Omnidirectional Crash Detection:** The crash logic entirely overrides the brake logic. It calculates the raw vector magnitudes (`sqrt(x² + y² + z²)`) for both acceleration and angular velocity. If the bike experiences a shock greater than `30.0 m/s²` or a violent spin over `6.0 rad/s` on any axis, the system immediately latches into an emergency state, flashing the LED to alert surrounding drivers.
+### Step 4: Resolving Haptic Hardware Constraints
+During integration, a hardware conflict arose: both left and right TacHammer motors buzzed simultaneously regardless of the threat's location. The TCA9548A I2C multiplexer only switches the control registers of the DRV2605 haptic drivers, not the actual PWM drive signal.
+* **The PWM Split:** We resolved this by electrically isolating the PWM lines. Using the ATmega328P's internal Timer2, we configured two independent PWM outputs: Pin 11 (`OC2A`) for the left motor and Pin 3 (`OC2B`) for the right motor.
+* **Signed PWM Scheme:** The haptic library operates on a signed PWM scheme where a ~50% duty cycle (`PWM_NEUTRAL = 127`) equates to zero mechanical drive. When a left-side threat is detected, the right motor's PWM is parked exactly at neutral, ensuring complete mechanical isolation between the left and right tactile alerts.
+
+### Step 5: Adaptive IMU Algorithm (Arduino Micro)
+Detecting a braking bicycle is notoriously complex because a static deceleration threshold will trigger false positives when riding uphill and fail to trigger when riding downhill. The Arduino Micro runs a sophisticated, self-correcting adaptive algorithm on the MPU-6050 data at 50 Hz to solve this:
+* **The Dynamic Baseline:** The code applies a slow low-pass filter (`forwardBaseline += 0.01 * (forward - forwardBaseline)`) to the forward acceleration axis. This creates a floating baseline that constantly adjusts to gravity (hill inclines) and average cruising speed, acting as a ~2-second time constant.
+* **The "Quiet Band" Lockout:** To prevent the baseline from absorbing sudden stops, the algorithm implements a `BASELINE_QUIET_BAND`. The baseline is only permitted to update when the acceleration signal is exceptionally quiet. When the rider brakes hard, the baseline mathematically locks into place, providing a rock-solid reference point for the duration of the stop. If the acceleration drops below this locked baseline by `0.6 m/s²` for three consecutive samples, the LED jumps to full brightness.
+* **Omnidirectional Crash Detection:** The crash logic calculates the raw vector magnitudes (`sqrt(x² + y² + z²)`) for both acceleration and angular velocity. If the bike experiences a shock greater than `30.0 m/s²` or a violent spin over `6.0 rad/s` on any axis, the system latches into an emergency state, rapidly flashing the rear LED to alert surrounding drivers.
 
 ---
 
 ## Discussion
 
-The prototype effectively translates spatial and telemetry data into tactile feedback, directly addressing the sensory deficits common in older cyclists. By utilizing independent left/right haptic channels, the system successfully eliminates the need for visual dashboard checks, directly mitigating the cognitive load associated with mirror checking and screen reading. 
+The prototype effectively translates spatial, kinetic, and telemetry data into tactile and visual feedback, directly addressing the sensory deficits common in older cyclists. By utilizing independent left/right haptic channels, the system successfully eliminates the need for visual dashboard checks, mitigating the cognitive load associated with mirror checking. 
 
-The software architecture proved highly successful. Implementing a non-blocking state machine alongside a hardware interrupt on the Uno completely resolved the stuttering issues typically seen in Arduino sensor arrays, resulting in instant, fluid haptic responses. Furthermore, the Micro's adaptive IMU algorithm elegantly solves the "hill problem," proving that a simple low-pass filter with a quiet-band lockout can produce an incredibly reliable, auto-calibrating brake light without complex trigonometry.
+Bench testing confirms that both the sensing matrix and the safety lighting perform exceptionally well. The IMU-driven brake and crash detection algorithms operate reliably, proving that the adaptive low-pass filter with a quiet-band lockout can produce a highly accurate, auto-calibrating brake light without requiring complex trigonometry. 
 
-However, the current build has limitations. Distributing the architecture across two microcontrollers (Uno and Micro) made the wiring harness complex and the physical footprint bulky. Combining these functions requires a microcontroller with multiple hardware timers and an RTOS (Real-Time Operating System) to manage the blocking I2C calls alongside high-frequency PWM generation.
+The decision to separate the processing load across two microcontrollers (the Uno and the Micro) was dictated by two primary constraints encountered during development:
+1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated PCB layout. 
+2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ---
 
 ## Conclusion and Future Work
 
-This project demonstrates a highly viable proof-of-concept: haptic feedback can seamlessly replace visual and auditory dashboards to restore spatial awareness for elderly and vulnerable cyclists. The prototype successfully integrates blind-spot monitoring, speed pacing, and automated safety lighting into a completely screen-free interface.
+This project demonstrates a highly viable proof-of-concept: haptic feedback can seamlessly replace visual and auditory dashboards to restore spatial awareness for elderly and vulnerable cyclists. The prototype successfully integrates blind-spot monitoring, speed pacing, and automated safety lighting into a comprehensive interface.
 
 Future development should focus on several key areas:
-1.  **Hardware Consolidation:** Migrating the codebase to a single, powerful microcontroller (such as an ESP32) housed in a weatherproof, stem-mounted enclosure with an integrated lithium-ion battery management system.
-2.  **Sensor Upgrades:** Swapping the HC-SR04 ultrasonic sensors for short-range millimeter-wave radar to improve reliability in dense traffic, heavy rain, and varied lighting conditions.
-3.  **App Integration & Emergency Response:** Utilizing Bluetooth to sync ride telemetry to a companion app. This would allow clinicians to prescribe structured cycling rehabilitation plans, and enable the IMU's crash-latch state to automatically trigger an SMS alert to emergency contacts.
-4.  **Clinical Validation:** Conducting structured on-road user studies with elderly, glaucoma, and hearing-impaired demographics to fine-tune the haptic intensity and detection thresholds.
+1. **Hardware Consolidation:** Migrating the codebase to a single, more powerful 32-bit microcontroller with RTOS (Real-Time Operating System) capabilities, housed in a professionally manufactured weatherproof enclosure.
+2. **Sensor Upgrades:** Swapping the HC-SR04 ultrasonic sensors for short-range millimeter-wave radar to improve reliability in dense traffic, heavy rain, and varied lighting conditions.
+3. **App Integration & Emergency Response:** Utilizing Bluetooth to sync ride telemetry to a companion app. This would allow clinicians to prescribe structured cycling rehabilitation plans, and enable the IMU's crash-latch state to automatically trigger an SMS alert to emergency contacts or an ambulance.
+4. **Clinical Validation:** Conducting structured on-road user studies with elderly, glaucoma, and hearing-impaired demographics to fine-tune the haptic intensity and detection thresholds.
 
 ---
 
