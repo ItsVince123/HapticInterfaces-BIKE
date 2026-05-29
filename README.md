@@ -26,7 +26,7 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | **Hall sensor (KY-003) + magnet** | Wheel-magnet speed and distance tracking. | 1 | €5 |
 | **9V battery connector** | Portable supply for ~8 hours of continuous operation. | 1 | €3 |
 | **Jumper Cables (F-to-F)** | Mechanical integration on handlebar stem and seat post. | 40 | €5 |
-| **3D Printed Enclosures** | Custom frame mounts to secure electronics to the bike chassis. | 1 | €0 (Custom) |
+| **3D Printed bike** | Custom bike to secure electronics to the bike chassis. | 1 | €0 (Custom) |
 
 *Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
 
@@ -44,7 +44,7 @@ The architectural design of this system is fundamentally structured around multi
 ### Step 2: Physical Construction, Power, and Integration
 The mechanical assembly required strategic distribution of components across the bicycle frame. 
 * **Frame Integration:** The Arduino Micro, the MPU-6050 IMU, both HC-SR04 ultrasonic sensors, the safety LED (with its 220-ohm resistor), the 9V battery, and the Hall effect sensor are physically secured and glued to the bicycle frame using custom 3D-printed mounts. Internal data and power pathways are established using standard female-to-female jumper cables.
-* **Haptic Placement:** The two TacHammer actuators (referred to internally as "drakes") are mounted directly onto the left and right grips of the steering wheel (handlebars).
+* **Haptic Placement:** The two TacHammer actuators are mounted directly onto the left and right grips of the steering wheel (handlebars).
 * **Power and Testing Configuration:** To manage power constraints and facilitate debugging, the system employs a dual-power strategy. The onboard Arduino Micro is powered independently by a 9V battery. Conversely, the Arduino Uno is maintained separately on a testing breadboard and is powered directly via a PC USB connection. During testing and calibration phases, the ultrasonic sensors, the Hall effect sensor, and the haptic actuators can be quickly routed to the breadboard/Uno for live serial monitoring and algorithm refinement.
 
 ### Step 3: The Concurrency Engine (Arduino Uno)
