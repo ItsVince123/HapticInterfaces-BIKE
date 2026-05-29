@@ -20,15 +20,16 @@ The total estimated cost for this prototype is approximately €160. To replicat
 | :--- | :--- | :--- | :--- |
 | **HC-SR04 ultrasonic sensors** | Left/right side-proximity detection; 1 cm – 300 cm range. | 2 | €3 |
 | **MPU-6050 IMU (accel + gyro)** | Forward-axis brake detection and crash sensing. | 1 | €4 |
-| **TacHammer vibrotactile actuators** | Left/right side alerts via haptic patterns. Driven by DRV2605. | 2 | €80 |
+| **TacHammer vibrotactile actuators** | Left/right side alerts via haptic patterns ("drakes"). | 2 | €80 |
+| **DRV2605L Haptic Motor Drivers** | Interfacing breakout boards to drive the TacHammer actuators via I2C and signed PWM. | 2 | €10 |
 | **Arduino Uno (ATmega328P)** | Master controller for blind spot sensors and Hall effect interrupts. | 1 | €25 |
 | **Arduino Micro (ATmega32U4)** | Dedicated IMU and brake-light loop (relies on Timer4 PWM). | 1 | €25 |
-| **TCA9548A I2C Multiplexer** | Routes I2C commands to the dual DRV2605 drivers. | 1 | €4 |
+| **TCA9548A I2C Multiplexer** | Routes I2C commands to the dual DRV2605L drivers. | 1 | €4 |
 | **Red LED + 220-ohm resistor** | Auto-engaged brake light; flashes on crash-latch events. | 1 | €1 |
 | **Hall sensor (KY-003) + magnet** | Wheel-magnet speed and distance tracking. | 1 | €5 |
-| **9V battery connector** | Portable supply for ~8 hours of continuous operation. | 1 | €3 |
-| **Jumper Cables (F-to-F)** | Mechanical integration on handlebar stem and seat post. | 40 | €5 |
-| **3D Printed bike mounts** | Custom mounts to secure electronics to the bike chassis. | 1 | €0 (Custom) |
+| **9V battery and connector** | Portable supply to power the Micro for ~8 hours of continuous operation. | 1 | €3 |
+| **Jumper Cables (F-to-F)** | Mechanical integration across the scale model chassis. | 40 | €5 |
+| **Small 3D Printed bike** | Custom scale model bike to house and secure the electronics. | 1 | €0 (Custom) |
 
 *Note: All necessary CAD files for the 3D-printed enclosures and complete electrical schematics are available in this repository to ensure full reproducibility.*
 
