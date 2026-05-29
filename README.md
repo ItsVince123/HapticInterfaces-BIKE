@@ -1,5 +1,7 @@
 # Restoring Spatial Awareness for Elderly Cyclists: A Haptic Interface Prototype
 
+![bike](bike.png)
+
 ## Introduction
 
 Cycling provides measurable cognitive and physical benefits for older adults [3], [4], yet it remains inherently dangerous in complex traffic environments [11]. Many older cyclists gradually lose the two traffic senses they rely on most: peripheral vision (often resulting from glaucoma) and sound localization (due to age-related hearing loss). This sensory decline makes elderly cyclists incredibly vulnerable to unseen lateral hazards. Furthermore, driving and mobility studies demonstrate that around 1 in 4 people aged 60-80 with glaucoma stop driving [1], [2], often disengaging from active transportation entirely. The recent surge in e-bike popularity compounds this issue; their heavier weight and faster speeds have led to a massive spike in severe crashes among older populations.
