@@ -40,6 +40,9 @@ The architectural design of this system is fundamentally structured around multi
 * **Hall Effect Sensor (KY-003):** Selected for robust, non-contact rotational telemetry. A permanent magnet is affixed to the wheel spokes; as the wheel rotates, the magnet passes the sensor, inducing a measurable fluctuation in the magnetic field. This allows the system to calculate precise speed and distance metrics independent of GPS signals.
 * **Inertial Measurement Unit (MPU-6050):** A 6-axis MEMS (Micro-Electromechanical Systems) sensor utilized to capture the kinetic state of the bicycle. It provides high-resolution acceleration and angular velocity data, enabling the system to deduce intentional deceleration (braking) and uncontrolled kinetic events (crashes).
 * **TacHammer Actuators:** Deployed on the steering wheel to leverage the tactile communication channel. These specific voice-coil actuators provide distinct, high-fidelity haptic patterns that are easily distinguishable from standard road vibration.
+* The decision to separate the processing load across two microcontrollers (the Uno and the Micro) was dictated by two primary constraints encountered during development:
+1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout. 
+2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ### Step 2: Physical Construction, Power, and Integration
 The mechanical assembly required strategic distribution of components across the bicycle frame. 
@@ -72,10 +75,6 @@ Detecting a braking bicycle is notoriously complex because a static deceleration
 The prototype effectively translates spatial, kinetic, and telemetry data into tactile and visual feedback, directly addressing the sensory deficits common in older cyclists. By utilizing independent left/right haptic channels, the system successfully eliminates the need for visual dashboard checks, mitigating the cognitive load associated with mirror checking. 
 
 Bench testing confirms that both the sensing matrix and the safety lighting perform exceptionally well. The IMU-driven brake and crash detection algorithms operate reliably, proving that the adaptive low-pass filter with a quiet-band lockout can produce a highly accurate, auto-calibrating brake light without requiring complex trigonometry. 
-
-The decision to separate the processing load across two microcontrollers (the Uno and the Micro) was dictated by two primary constraints encountered during development:
-1. **Mechanical Restraints:** The physical dimensions of our available 3D printer limited the maximum printable volume of the hardware enclosure, preventing the use of a single, larger, consolidated layout. 
-2. **Computational Overhead & Task Scheduling:** Task scheduling proved prohibitive on a single 8-bit microcontroller. Managing the microsecond-level timing of two asynchronous ultrasonic sensors alongside a high-priority Hall effect hardware interrupt already saturated the Arduino Uno's processing capabilities. Attempting to add a 50 Hz I2C polling loop for the IMU to the same processor caused unacceptable latency and compromised the haptic feedback's timing accuracy.
 
 ---
 
