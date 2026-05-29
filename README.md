@@ -80,7 +80,7 @@ However, as this is a functional prototype built onto a scaled bicycle, there ar
 1. **Environmental Vulnerability:** The exposed HC-SR04 ultrasonic sensors are susceptible to acoustic interference from heavy rain or high wind speeds, and mud accumulation can blind the transceivers. 
 2. **Wiring Fragility:** Relying on standard jumper cables and breadboard configurations introduces points of failure under the continuous mechanical vibration of road cycling.
 3. **Fixed Calibration Constraints:** The current Hall effect logic calculates speed based on a hardcoded wheel circumference. Moving the system to a different bicycle requires manual code adjustments rather than a seamless user-calibrated setup.
-4. **Mounting:** All the hardware needs to have a proper place and needs to be securely mounted onto the bike.
+4. **Mounting:** All the hardware needs to have a proper place and needs to be securely mounted onto a real, full scale, bike.
 
 ---
 
@@ -92,4 +92,23 @@ This project demonstrates a highly successful proof-of-concept: haptic feedback 
 For others building upon this work, a major lesson learned is the critical importance of non-blocking code (state machines and hardware interrupts) when managing real-time safety haptics. Any blocking code immediately degrades the quality and timing of tactile alerts. Additionally, when using I2C multiplexers like the TCA9548A for haptic drivers, developers must remember that multiplexers do not isolate the continuous PWM drive signals—timer allocation and electrical isolation must be planned at the hardware level.
 
 **Future Development Directions:**
-1. **App Integration & Workout Tracking:** Utilizing a Bluetooth module to sync the ride telemetry (from the Hall effect sensor) to a companion smartphone app. Clinicians or users could set
+1. **App Integration & Workout Tracking:** Utilizing a Bluetooth module to sync the ride telemetry (from the Hall effect sensor) to a companion smartphone app. Clinicians or users could set structured physical rehabilitation plans, and the bicycle would use the haptic grips to guide the user through interval training (e.g., buzzing to speed up or slow down) without them ever needing to look at their phone.
+2. **Hardware Consolidation:** Migrating the codebase from the dual Arduino setup to a single, more powerful 32-bit microcontroller with RTOS (Real-Time Operating System) capabilities, housed in a professionally manufactured, weatherproof enclosure to resolve wiring fragility.
+3. **Sensor Upgrades:** Swapping the ultrasonic sensors for short-range millimeter-wave radar to improve reliability in dense traffic and adverse weather conditions.
+4. **Emergency Response:** Enabling the IMU's crash-latch state to communicate with the proposed companion app, automatically triggering an SMS alert to an ambulance or predefined emergency contacts with GPS coordinates.
+
+---
+
+## References
+
+[1] S. W. van Landingham et al., “Driving patterns in older adults with glaucoma,” BMC Ophthalmol., vol. 13, no. 4, 2013.  
+[2] J. M. Wood, A. A. Black, K. Mallon, R. Thomas and C. Owsley, “Glaucoma and driving: on-road driving characteristics,” PLoS ONE, vol. 11, no. 7, e0158318, 2016.  
+[3] L.-A. Leyland et al., “The effect of cycling on cognitive function and well-being in older adults,” PLoS ONE, vol. 14, no. 2, e0211779, 2019.  
+[4] M. Kardan et al., “Cycling in older adults: a scoping review,” Front. Sports Act. Living, vol. 5, art. 1157503, 2023.  
+[5] D. S. Alles, “Information transmission by phantom sensations,” IEEE Trans. Man-Machine Syst., vol. 11, no. 1, pp. 85–91, 1970.  
+[6] J. Seiler et al., “Wearable vibrotactile interface using phantom tactile sensation for human–robot interaction,” in Proc. EuroHaptics, Springer LNCS 12272, 2020, pp. 380–388.  
+[7] A. Matviienko et al., “Augmenting bicycles and helmets with multimodal warnings for children,” in Proc. MobileHCI ’18, Barcelona, Spain, 2018, art. 15, pp. 1–13.  
+[8] M. Green, “‘How long does it take to stop?’ Methodological analysis of driver perception–brake times,” Transp. Hum. Factors, vol. 2, no. 3, pp. 195–216, 2000.  
+[9] J. R. Treat et al., “Tri-level study of the causes of traffic accidents,” NHTSA Report DOT-HS-805-099, 1979.  
+[10] Y. Gaffary and A. Lécuyer, “The use of haptic and tactile information in the car to improve driving safety: a review of current technologies,” Front. ICT, vol. 5, art. 5, 2018.  
+[11] World Health Organization, “Global status report on road safety,” Geneva: WHO, 2023.
