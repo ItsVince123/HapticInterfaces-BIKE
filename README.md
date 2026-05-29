@@ -55,6 +55,10 @@ The mechanical assembly required strategic distribution of components across the
 * **Haptic Placement:** The two TacHammer actuators are mounted directly onto the left and right grips of the steering wheel (handlebars).
 * **Power and Testing Configuration:** To manage power constraints and facilitate debugging, the system employs a dual-power strategy. The onboard Arduino Micro is powered independently by a 9V battery. Conversely, the Arduino Uno is maintained separately on a testing breadboard and is powered directly via a PC USB connection. During testing and calibration phases, the ultrasonic sensors, the Hall effect sensor, and the haptic actuators can be quickly routed to the breadboard/Uno for live serial monitoring and algorithm refinement.
 
+Use the image for the layout and location of the components:
+
+![bike_layout](bike_layout.png)
+
 ### Step 3: The Concurrency Engine (Arduino Uno) [CODE_Blindspot_Tracking.ino]
 The primary software challenge was the simultaneous execution of distance sensing and high-speed wheel tracking on the Arduino Uno. Standard methodologies for ultrasonic sensors (e.g., the `pulseIn()` function) block the processor while waiting for an acoustic echo, which would destroy the precise timing required for I2C haptic patterns and cause the system to miss wheel rotations.
 
